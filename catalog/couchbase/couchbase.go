@@ -312,9 +312,50 @@ func (b *bucket) CreateIndex(name string, key catalog.IndexKey, using catalog.In
 		b.indexes[idx.Name()] = idx
 		return idx, nil
 
+	case catalog.LSM:
+		if _, exists := b.indexes[name]; exists {
+			return nil, query.NewError(nil, fmt.Sprintf("Index already exists: %s", name))
+		}
+		idx, err := newLsmIndex(name, key, b)
+		if err != nil {
+			return nil, query.NewError(err, fmt.Sprintf("Error creating index: %s", name))
+		}
+		b.indexes[idx.Name()] = idx
+		return idx, nil
+
 	default:
 		return nil, query.NewError(nil, "Not yet implemented.")
 	}
+}
+
+func (b *bucket) loadIndexes() query.Error {
+	// #alldocs implicitly exists
+	pi := newAllDocsIndex(b)
+	b.indexes[pi.name] = pi
+
+	// and recreate remaining from ddocs
+	indexes, err := loadViewIndexes(b)
+	if err != nil {
+		return query.NewError(err, "Error loading view indexes")
+	}
+
+	for _, index := range indexes {
+		name := (*index).Name()
+		b.indexes[name] = *index
+	}
+
+	// and recreate remaining from LSM indexes
+	indexes, err = loadLsmIndexes(b)
+	if err != nil {
+		return query.NewError(err, "Error loading lsm indexes")
+	}
+
+	for _, index := range indexes {
+		name := (*index).Name()
+		b.indexes[name] = *index
+	}
+
+	return nil
 }
 
 func newBucket(p *pool, name string) (*bucket, query.Error) {
