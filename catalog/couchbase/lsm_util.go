@@ -15,68 +15,8 @@ import (
 	"github.com/couchbaselabs/tuqtng/query"
 )
 
-type RequestType int
-
-const (
-	CREATE RequestType = iota
-	DELETE RequestType = iota
-	LIST   RequestType = iota
-	QUERY  RequestType = iota
-)
-
-type IndexRequest struct {
-	Type   RequestType
-	Index  IndexInfo
-	Params QueryParams
-}
-
-type IndexInfo struct {
-	Name       string
-	Id         string
-	Using      catalog.IndexType
-	CreateStmt string
-	Bucket     string
-	IsPrimary  bool
-}
-
-type QueryParams struct {
-	Low       string
-	High      string
-	Inclusion catalog.RangeInclusion
-	Limit     int64
-}
-
-type IndexRow struct {
-	Key   interface{}
-	Value interface{}
-}
-
-type IndexError struct {
-	From   string
-	Reason string
-}
-
 func (ie IndexError) Error() string {
 	return fmt.Sprintf("Node: %v, reason: %v", ie.From, ie.Reason)
-}
-
-type ResponseStatus int
-
-const (
-	SUCCESS ResponseStatus = iota
-	ERROR   ResponseStatus = iota
-)
-
-type IndexResultResponse struct {
-	Status ResponseStatus
-	Rows   []IndexRow
-	Errors []IndexError
-}
-
-type IndexMetaResponse struct {
-	Status  ResponseStatus
-	Errors  []IndexError
-	Indexes []IndexInfo
 }
 
 var HttpClient = http.DefaultClient
