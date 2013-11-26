@@ -12,14 +12,17 @@ const (
 	CREATE RequestType = iota
 	DROP   RequestType = iota
 	LIST   RequestType = iota
+	NOTIFY RequestType = iota
+	NODES  RequestType = iota
 	SCAN   RequestType = iota
 	STATS  RequestType = iota
 )
 
 type IndexRequest struct {
-	Type   RequestType
-	Index  IndexInfo
-	Params QueryParams
+	Type       RequestType
+	Index      IndexInfo
+	ServerUUID int64
+	Params     QueryParams
 }
 
 type IndexInfo struct {
@@ -43,8 +46,9 @@ type QueryParams struct {
 type ResponseStatus int
 
 const (
-	SUCCESS ResponseStatus = iota
-	ERROR   ResponseStatus = iota
+	SUCCESS       ResponseStatus = iota
+	ERROR         ResponseStatus = iota
+	INVALID_CACHE ResponseStatus = iota
 )
 
 type IndexScanResponse struct {
@@ -55,9 +59,11 @@ type IndexScanResponse struct {
 }
 
 type IndexMetaResponse struct {
-	Status  ResponseStatus
-	Indexes []IndexInfo
-	Errors  []IndexError
+	Status     ResponseStatus
+	Indexes    []IndexInfo
+	ServerUUID int64
+	Nodes      []NodeInfo
+	Errors     []IndexError
 }
 
 type IndexStatsResponse struct {
@@ -76,6 +82,10 @@ type IndexError struct {
 	Msg  string
 }
 
+type NodeInfo struct {
+	IndexerURL string
+}
+
 type IndexStats struct {
 	Count         int64
 	Min           string
@@ -87,6 +97,6 @@ type IndexStats struct {
 type IndexBin struct {
 	Count         int64
 	Min           string
-	Min           string
+	Max           string
 	DistinctCount int64
 }
