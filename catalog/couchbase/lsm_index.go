@@ -1,6 +1,7 @@
 package couchbase
 
 import (
+	"bytes"
 	"fmt"
 	//	"github.com/couchbaselabs/clog"
 	//	"github.com/couchbaselabs/dparval"
@@ -9,12 +10,12 @@ import (
 )
 
 type lsmIndex struct {
-	name       string
-	id         string
-	using      catalog.IndexType
-	on         catalog.IndexKey
-	bucket     *bucket
-	createStmt string
+	name   string
+	uuid   string
+	using  catalog.IndexType
+	on     catalog.IndexKey
+	bucket catalog.Bucket
+	//	createStmt string
 }
 
 type primaryLsmIndex struct {
@@ -26,7 +27,7 @@ func (li *lsmIndex) BucketId() string {
 }
 
 func (li *lsmIndex) Id() string {
-	return li.id
+	return li.uuid
 }
 
 func (li *lsmIndex) Name() string {
@@ -46,7 +47,7 @@ func (li *lsmIndex) Key() catalog.IndexKey {
 }
 
 func (li *lsmIndex) Drop() query.Error {
-	bucket := li.bucket
+	bucket := li.bucket.(*bucket)
 	if li.IsPrimary() {
 		return query.NewError(nil, "Primary index cannot be dropped.")
 	}
@@ -93,4 +94,14 @@ func (pi *primaryLsmIndex) IsPrimary() bool {
 
 func (pi *primaryLsmIndex) ScanBucket(limit int64, ch catalog.EntryChannel, warnch, errch query.ErrorChannel) {
 	pi.ScanEntries(limit, ch, warnch, errch)
+}
+
+func (li *lsmIndex) String() string {
+	var buf bytes.Buffer
+	buf.WriteString(fmt.Sprintf("name: %v ", li.name))
+	buf.WriteString(fmt.Sprintf("uuid: %v ", li.uuid))
+	buf.WriteString(fmt.Sprintf("using: %v ", li.using))
+	buf.WriteString(fmt.Sprintf("on: %v ", li.on))
+	buf.WriteString(fmt.Sprintf("bucket: %v", li.bucket.Name()))
+	return buf.String()
 }

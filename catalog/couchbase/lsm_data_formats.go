@@ -21,15 +21,15 @@ const (
 type IndexRequest struct {
 	Type       RequestType
 	Index      IndexInfo
-	ServerUUID int64
+	ServerUuid string
 	Params     QueryParams
 }
 
 type IndexInfo struct {
 	Name       string
-	Id         string
+	Uuid       string
 	Using      catalog.IndexType
-	CreateStmt string
+	OnExprList []string
 	Bucket     string
 	IsPrimary  bool
 }
@@ -61,7 +61,7 @@ type IndexScanResponse struct {
 type IndexMetaResponse struct {
 	Status     ResponseStatus
 	Indexes    []IndexInfo
-	ServerUUID int64
+	ServerUuid string
 	Nodes      []NodeInfo
 	Errors     []IndexError
 }
